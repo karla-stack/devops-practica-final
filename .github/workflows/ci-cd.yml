@@ -1,0 +1,63 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout codigo
+      uses: actions/checkout@v3
+    
+    - name: Configurar Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Instalar dependencias
+      run: npm ci
+    
+    - name: Ejecutar pruebas
+      run: npm test
+
+  build-and-push:
+    name: Build y Push a Docker Hub
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+    - name: Checkout codigo
+      uses: actions/checkout@v3
+    
+    - name: Login a Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+    - name: Build y Push imagen Docker
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: |
+          ${{ secrets.DOCKERHUB_USERNAME }}/devops-practica:latest
+          ${{ secrets.DOCKERHUB_USERNAME }}/devops-practica:${{ github.sha }}
+
+  deploy:
+    name: Deploy a Produccion
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+    - name: Deploy a Render
+      run: |
+        curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}

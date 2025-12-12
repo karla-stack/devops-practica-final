@@ -1,0 +1,20 @@
+{
+  "name": "devops-practica-final",
+  "version": "1.0.0",
+  "description": "Practica Final DevOps CI/CD",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "jest"
+  },
+  "keywords": ["devops", "ci/cd", "docker"],
+  "author": "Karla",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3"
+  }
+}
